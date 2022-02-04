@@ -25,8 +25,10 @@ class GeneticAlgorithm(object):
         self._generations = generations
         self._elite_size = elite_size
         self.method = method
-        pieces, rows, columns = image_helpers.flatten_image(image, piece_size, indexed=True)
-        self._population = [Individual(pieces, rows, columns) for _ in range(population_size)]
+        pieces, rows, columns = image_helpers.flatten_image(
+            image, piece_size, indexed=True)
+        self._population = [Individual(pieces, rows, columns)
+                            for _ in range(population_size)]
         self._pieces = pieces
 
     def start_evolution(self, verbose: bool):
@@ -52,7 +54,8 @@ class GeneticAlgorithm(object):
             elite = self._get_elite_individuals()
             new_population.extend(elite)
 
-            selected_parents = roulette_selection(self._population, elites=self._elite_size)
+            selected_parents = roulette_selection(
+                self._population, elites=self._elite_size)
 
             for first_parent, second_parent in selected_parents:
                 crossover = Crossover(first_parent, second_parent)
@@ -69,21 +72,27 @@ class GeneticAlgorithm(object):
 
             if termination_counter == self.TERMINATION_THRESHOLD:
                 print('\n\n=== GA terminated')
-                print('=== There was no improvement for {} generations'.format(self.TERMINATION_THRESHOLD))
+                print('=== There was no improvement for {} generations'.format(
+                    self.TERMINATION_THRESHOLD))
                 return fittest
 
             self._population = new_population
 
             if verbose:
-                plot.show_fittest(fittest.to_image(), 'Generation: {} / {}'.format(generation + 1, self._generations))
+                plot.show_fittest(
+                    fittest.to_image(),
+                    'Generation: {} / {}, fitness = {:.2f}'.format(
+                        generation + 1, self._generations, fittest.fitness
+                    )
+                )
 
         return fittest
 
     def _get_elite_individuals(self) -> List[Individual]:
         '''Returns first 'elite_count' fittest individuals from population'''
         # choose the last self._elite_size of the population
-        return sorted(self._population, key = attrgetter('fitness'))[-self._elite_size:]
+        return sorted(self._population, key=attrgetter('fitness'))[-self._elite_size:]
 
     def _best_individual(self) -> Individual:
         '''Returns the fittest individual from population'''
-        return max(self._population, key = attrgetter('fitness'))
+        return max(self._population, key=attrgetter('fitness'))

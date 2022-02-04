@@ -8,7 +8,7 @@ def dissimilarity_measure(first: Piece, second: Piece, method: str = 'Mahalanobi
 
     The dissimilarity measure relies on the premise that adjacent jigsaw pieces in the original image tend to share
     similar colors along their abutting edges, i.e., the sum (over all neighboring pixels) of squared color differences
-    (over all three color bands) should be minimal. Let pieces pi , pj be represented in normalized L*a*b*
+    (over all three color bands) should be minimal. Let pieces pi , pj be represented in RGB
     space by corresponding W x W x 3 matrices, where W is the height/width of each piece (in pixels).
 
     :params first:        First input piece for calculation.
@@ -32,7 +32,7 @@ def dissimilarity_measure(first: Piece, second: Piece, method: str = 'Mahalanobi
     if method == 'L2':
         if orientation == 'LR':
             color_diff = first.right - second.left
-        if orientation == 'TD':
+        elif orientation == 'TD':
             color_diff = first.bottom - second.top
 
     elif method == 'Mahalanobis':
@@ -42,7 +42,7 @@ def dissimilarity_measure(first: Piece, second: Piece, method: str = 'Mahalanobi
             diff_lr = l_to_r @ first.sigma_right_inv @ l_to_r.T
             diff_rl = l_to_r @ second.sigma_left_inv @ l_to_r.T
             color_diff = diff_lr + diff_rl
-        if orientation == 'TD':
+        elif orientation == 'TD':
             # t_to_d.shape = (piece_size, 3)
             t_to_d = (second.top - first.bottom) - first.mu_bottom
             diff_td = t_to_d @ first.sigma_bottom_inv @ t_to_d.T

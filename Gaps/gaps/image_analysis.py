@@ -69,7 +69,7 @@ class ImageAnalysis(object):
         cls.dissimilarity_measures[ids][orientation] = value
 
     @classmethod
-    def get_dissimilarity(cls, ids: Tuple[int], orientation: str):
+    def get_dissimilarity(cls, ids: Tuple[int], orientation: str) -> float:
         '''Returns previously cached dissimilarity measure for input pieces
 
         :params ids:         Identfiers of puzzle pieces
@@ -86,6 +86,6 @@ class ImageAnalysis(object):
         return cls.dissimilarity_measures[ids][orientation]
 
     @classmethod
-    def best_match(cls, piece, orientation):
+    def best_match(cls, piece, orientation) -> int:
         ''''Returns best match piece for given piece and orientation'''
         return cls.best_match_table[piece][orientation][0][0]

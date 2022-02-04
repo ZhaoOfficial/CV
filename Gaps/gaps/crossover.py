@@ -1,6 +1,6 @@
-import random
 import heapq
-from typing import Tuple
+import random
+from typing import Tuple, List, Optional
 
 from gaps.image_analysis import ImageAnalysis
 from gaps.individual import Individual
@@ -29,12 +29,11 @@ class Crossover(object):
         # Priority queue
         self._candidate_pieces = []
 
-    def child(self):
+    def child(self) -> Individual:
         pieces = [None] * self._pieces_length
 
         for piece, (row, column) in self._kernel.items():
-            index = (row - self._min_row) * self._child_columns + \
-                (column - self._min_column)
+            index = (row - self._min_row) * self._child_columns + (column - self._min_column)
             pieces[index] = self._parents[0].piece_by_id(piece)
 
         return Individual(pieces, self._child_rows, self._child_columns, shuffle=False)
@@ -43,8 +42,7 @@ class Crossover(object):
         self._initialize_kernel()
 
         while len(self._candidate_pieces) > 0:
-            _, (position, piece_id), relative_piece = heapq.heappop(
-                self._candidate_pieces)
+            _, (position, piece_id), relative_piece = heapq.heappop(self._candidate_pieces)
 
             if position in self._taken_positions:
                 continue
@@ -60,8 +58,7 @@ class Crossover(object):
 
     def _initialize_kernel(self):
         # choose a root piece
-        root_piece = self._parents[0].pieces[random.randint(
-            0, self._pieces_length - 1)]
+        root_piece = self._parents[0].pieces[random.randint(0, self._pieces_length - 1)]
         self._put_piece_to_kernel(root_piece.id, (0, 0))
 
     def _put_piece_to_kernel(self, piece_id: int, position: Tuple[int, int]):
@@ -80,23 +77,25 @@ class Crossover(object):
         shared_piece = self._get_shared_piece(piece_id, orientation)
         if self._is_valid_piece(shared_piece):
             self._add_shared_piece_candidate(
-                shared_piece, position, (piece_id, orientation))
+                shared_piece, position, (piece_id, orientation)
+            )
             return
 
         buddy_piece = self._get_buddy_piece(piece_id, orientation)
         if self._is_valid_piece(buddy_piece):
             self._add_buddy_piece_candidate(
-                buddy_piece, position, (piece_id, orientation))
+                buddy_piece, position, (piece_id, orientation)
+            )
             return
 
-        best_match_piece, priority = self._get_best_match_piece(
-            piece_id, orientation)
+        best_match_piece, priority = self._get_best_match_piece(piece_id, orientation)
         if self._is_valid_piece(best_match_piece):
             self._add_best_match_piece_candidate(
-                best_match_piece, position, priority, (piece_id, orientation))
+                best_match_piece, position, priority, (piece_id, orientation)
+            )
             return
 
-    def _get_shared_piece(self, piece_id: int, orientation: str):
+    def _get_shared_piece(self, piece_id: int, orientation: str) -> Optional[int]:
         first_parent, second_parent = self._parents
         first_parent_edge = first_parent.edge(piece_id, orientation)
         second_parent_edge = second_parent.edge(piece_id, orientation)
@@ -104,36 +103,33 @@ class Crossover(object):
         if first_parent_edge == second_parent_edge:
             return first_parent_edge
 
-    def _get_buddy_piece(self, piece_id, orientation):
+    def _get_buddy_piece(self, piece_id: int, orientation: str) -> Optional[int]:
         first_buddy = ImageAnalysis.best_match(piece_id, orientation)
-        second_buddy = ImageAnalysis.best_match(
-            first_buddy, complementary_orientation(orientation))
+        second_buddy = ImageAnalysis.best_match(first_buddy, complementary_orientation(orientation))
 
         if second_buddy == piece_id:
             for edge in [parent.edge(piece_id, orientation) for parent in self._parents]:
                 if edge == first_buddy:
                     return edge
 
-    def _get_best_match_piece(self, piece_id, orientation):
+    def _get_best_match_piece(self, piece_id: int, orientation: str) -> Tuple[int, float]:
         for piece, dissimilarity_measure in ImageAnalysis.best_match_table[piece_id][orientation]:
             if self._is_valid_piece(piece):
                 return piece, dissimilarity_measure
 
-    def _add_shared_piece_candidate(self, piece_id, position, relative_piece):
-        piece_candidate = (SHARED_PIECE_PRIORITY,
-                           (position, piece_id), relative_piece)
+    def _add_shared_piece_candidate(self, piece_id: int, position: str, relative_piece: Tuple[int, str]):
+        piece_candidate = (SHARED_PIECE_PRIORITY, (position, piece_id), relative_piece)
         heapq.heappush(self._candidate_pieces, piece_candidate)
 
-    def _add_buddy_piece_candidate(self, piece_id, position, relative_piece):
-        piece_candidate = (BUDDY_PIECE_PRIORITY,
-                           (position, piece_id), relative_piece)
+    def _add_buddy_piece_candidate(self, piece_id: int, position: str, relative_piece: Tuple[int, str]):
+        piece_candidate = (BUDDY_PIECE_PRIORITY, (position, piece_id), relative_piece)
         heapq.heappush(self._candidate_pieces, piece_candidate)
 
-    def _add_best_match_piece_candidate(self, piece_id, position, priority, relative_piece):
+    def _add_best_match_piece_candidate(self, piece_id: int, position: str, priority: float, relative_piece: Tuple[int, str]):
         piece_candidate = (priority, (position, piece_id), relative_piece)
         heapq.heappush(self._candidate_pieces, piece_candidate)
 
-    def _available_boundaries(self, row_and_column: Tuple[int, int]):
+    def _available_boundaries(self, row_and_column: Tuple[int, int]) -> List[Tuple[str, Tuple[int, int]]]:
         (row, column) = row_and_column
         boundaries = []
 
@@ -160,13 +156,11 @@ class Crossover(object):
         return self._is_row_in_range(row) and self._is_column_in_range(column)
 
     def _is_row_in_range(self, row: int) -> bool:
-        current_rows = abs(min(self._min_row, row)) + \
-            abs(max(self._max_row, row))
+        current_rows = abs(min(self._min_row, row)) + abs(max(self._max_row, row))
         return current_rows < self._child_rows
 
     def _is_column_in_range(self, column: int) -> bool:
-        current_columns = abs(min(self._min_column, column)) + \
-            abs(max(self._max_column, column))
+        current_columns = abs(min(self._min_column, column)) + abs(max(self._max_column, column))
         return current_columns < self._child_columns
 
     def _update_kernel_boundaries(self, row_and_column: Tuple[int, int]):
@@ -176,11 +170,11 @@ class Crossover(object):
         self._min_column = min(self._min_column, column)
         self._max_column = max(self._max_column, column)
 
-    def _is_valid_piece(self, piece_id):
+    def _is_valid_piece(self, piece_id: int) -> bool:
         return piece_id is not None and piece_id not in self._kernel
 
 
-def complementary_orientation(orientation):
+def complementary_orientation(orientation: str) -> str:
     return {
         'T': 'D',
         'R': 'L',

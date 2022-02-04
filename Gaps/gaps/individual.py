@@ -86,6 +86,7 @@ class Individual(object):
     def edge(self, piece_id: int, orientation: str) -> int:
         edge_index = self._piece_mapping[piece_id]
 
+        # first do boundary checking, then return the piece over the given piece
         if (orientation == 'T') and (edge_index >= self.columns):
             return self.pieces[edge_index - self.columns].id
 

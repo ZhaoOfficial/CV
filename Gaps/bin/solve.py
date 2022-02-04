@@ -33,7 +33,7 @@ def parse_arguments():
     parser.add_argument('--generations', type=int, default=GENERATIONS, help='Num of generations.')
     parser.add_argument('--population', type=int, default=POPULATION, help='Size of population.')
     parser.add_argument('--size', type=int, help='Single piece size in pixels.')
-    parser.add_argument('--method', type=str, default='L2', help='Method for calculating error, "Mahalanobis" and "L2".')
+    parser.add_argument('--method', type=str, default='L2', help='Method for calculating error. Options: "Mahalanobis" and "L2".')
     parser.add_argument('--verbose', action='store_true', help='Show best individual after each generation.')
     parser.add_argument('--save', action='store_true', help='Save puzzle result as image.')
     return parser.parse_args()

@@ -27,20 +27,21 @@ class Piece(object):
         self.top    = image[0, :, :]
         self.bottom = image[-1, :, :]
 
-        self.gradient_left   = (image[:, 0, :] - image[:, 1, :]).reshape(-1, 3)
-        self.gradient_right  = (image[:, -1, :] - image[:, -2, :]).reshape(-1, 3)
-        self.gradient_top    = (image[0, :, :] - image[1, :, :]).reshape(-1, 3)
-        self.gradient_bottom = (image[-1, :, :] - image[-2, :, :]).reshape(-1, 3)
+        gradient_left   = (self.left - image[:, 1, :]).reshape(-1, 3)
+        gradient_right  = (self.right - image[:, -2, :]).reshape(-1, 3)
+        gradient_top    = (self.top - image[1, :, :]).reshape(-1, 3)
+        gradient_bottom = (self.bottom - image[-2, :, :]).reshape(-1, 3)
 
-        self.mu_left   = np.mean(self.gradient_left, axis = 0)
-        self.mu_right  = np.mean(self.gradient_right, axis = 0)
-        self.mu_top    = np.mean(self.gradient_top, axis = 0)
-        self.mu_bottom = np.mean(self.gradient_bottom, axis = 0)
+        # for Mahalanobis error
+        self.mu_left   = np.mean(gradient_left, axis = 0)
+        self.mu_right  = np.mean(gradient_right, axis = 0)
+        self.mu_top    = np.mean(gradient_top, axis = 0)
+        self.mu_bottom = np.mean(gradient_bottom, axis = 0)
 
-        self.sigma_left_inv = np.linalg.pinv(np.cov(self.gradient_left.T))
-        self.sigma_right_inv = np.linalg.pinv(np.cov(self.gradient_right.T))
-        self.sigma_top_inv = np.linalg.pinv(np.cov(self.gradient_top.T))
-        self.sigma_bottom_inv = np.linalg.pinv(np.cov(self.gradient_bottom.T))
+        self.sigma_left_inv = np.linalg.pinv(np.cov(gradient_left.T))
+        self.sigma_right_inv = np.linalg.pinv(np.cov(gradient_right.T))
+        self.sigma_top_inv = np.linalg.pinv(np.cov(gradient_top.T))
+        self.sigma_bottom_inv = np.linalg.pinv(np.cov(gradient_bottom.T))
 
     def __getitem__(self, index: int):
         return self.image.__getitem__(index)
